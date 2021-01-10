@@ -39,7 +39,7 @@ def main():
 
 # Page 1
 
-    st.dataframe(df_select)
+    #st.dataframe(df_select)
     st.title('Choix des variables')
     y_var = st.selectbox('Variable à expliquer', list(df_select.select_dtypes(include=np.object).iloc[:,:5].columns))
     X_var = st.multiselect('Variables expliquatives', list(df_select.select_dtypes(include=np.number).columns), default=list(df_select.select_dtypes(include=np.number).columns))
