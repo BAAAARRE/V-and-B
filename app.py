@@ -68,7 +68,7 @@ def main():
         st.write(plan_inertie)
 
         st.title('Individus similaires')
-        sel_simi = st.selectbox('', sorted(df[y_var].unique()))
+        sel_simi = st.selectbox('', sorted(df_acp[y_var].unique()))
         nb_simi = st.number_input("Nombre d'individus les plus similaires", min_value=1, max_value=n-1, value=3)
         df_near = get_indices_of_nearest_neighbours(df_acp, coord, nb_simi+1)
         reco = same_reco(df_near, sel_simi)
