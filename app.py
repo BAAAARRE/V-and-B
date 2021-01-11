@@ -6,6 +6,8 @@ import sklearn
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
+from scipy import spatial
+
 import plotly.graph_objects as go
 import plotly.express as px
 
@@ -27,33 +29,37 @@ def main():
 
 # Set Sidebar
     st.sidebar.title('Navigation onglet')
-    sel_type = st.sidebar.multiselect('Type de bière    ', sorted(df['Type de bière'].unique()))
-    
+    sel_type = st.sidebar.multiselect('Type de bière', sorted(df['Type de bière'].unique()))
+    sel_type_2 = st.sidebar.multiselect('Type de bière précision', sorted(df['Type de bière précision'].unique()))
+    slider_prix = st.sidebar.slider('Prix (€)', float(df['Prix'].min()), float(df['Prix'].max()), (float(df['Prix'].min()), float(df['Prix'].max())))
+    slider_degre = st.sidebar.slider("Degré d'alcool (%)", float(df["Degré d'alcool"].min()), float(df["Degré d'alcool"].max()), (float(df["Degré d'alcool"].min()), float(df["Degré d'alcool"].max())))
+    sel_pays = st.sidebar.multiselect('Pays', sorted(df['Pays'].unique()))
 
 # Configure generals filters
     df_type = multi_filter(df, sel_type, 'Type de bière')
+    df_type_2 = multi_filter(df, sel_type_2, 'Type de bière précision')
+    df_prix = df[df['Prix'].between(slider_prix[0],slider_prix[1])]
+    df_degre = df[df["Degré d'alcool"].between(slider_degre[0],slider_degre[1])]
+    df_pays = multi_filter(df, sel_pays, 'Pays')
 
-    df_select = df[df.isin(df_type)].dropna()
+    df_select = df[df.isin(df_type) & df.isin(df_type_2) & df.isin(df_prix) & df.isin(df_degre) & df.isin(df_pays)].dropna()
 
 
 
 # Page 1
 
-    #st.dataframe(df_select)
     st.title('Choix des variables')
     y_var = st.selectbox('Variable à expliquer', list(df_select.select_dtypes(include=np.object).iloc[:,:5].columns))
     X_var = st.multiselect('Variables expliquatives', list(df_select.select_dtypes(include=np.number).columns), default=list(df_select.select_dtypes(include=np.number).columns))
 
 
     df_acp, n, p, acp_, coord, eigval = acp(df = df_select, X = X_var, y = y_var)
-    if n>=p & len(X_var) >= 2:
 
-        st.title('Variance expliquée')
-        choix_axe(acp_, p)      
+    if n>=p:  
 
-        st.title('Choix dex axes à représenter')
-        nb_axe_x = st.number_input('Numéro axe factoriel pour X max(' + str(p) + ')', 1, max_value=p)
-        nb_axe_y = st.number_input('Numéro axe factoriel pour Y max(' + str(p) + ')', 2, max_value=p)
+        st.title('Choix des axes à représenter')
+        nb_axe_x = st.number_input('Numéro axe factoriel pour X max(' + str(p) + ')', value=1, max_value=p)
+        nb_axe_y = st.number_input('Numéro axe factoriel pour Y max(' + str(p) + ')', value=2, max_value=p)
 
         st.title('Graphique des individus')
         x_inertie, y_inertie, plan_inertie = graph_ind(df_acp, coord, acp_, nb_axe_x, nb_axe_y)
@@ -61,9 +67,23 @@ def main():
         st.write(y_inertie)
         st.write(plan_inertie)
 
-        corr = correlation(acp_, p, df_acp, nb_axe_x, nb_axe_y, eigval)
-        st.title('Cercle des corrélations')
-        cercle_corr(corr)
+        st.title('Individus similaires')
+        sel_simi = st.selectbox('', sorted(df[y_var].unique()))
+        nb_simi = st.number_input("Nombre d'individus les plus similaires", min_value=1, max_value=n-1, value=3)
+        df_near = get_indices_of_nearest_neighbours(df_acp, coord, nb_simi+1)
+        reco = same_reco(df_near, sel_simi)
+        #st.write(reco)
+
+        my_expander = st.beta_expander("Détails de l'ACP")
+        with my_expander:
+            
+
+            st.title('Variance expliquée')
+            choix_axe(acp_, p)    
+
+            corr = correlation(acp_, p, df_acp, nb_axe_x, nb_axe_y, eigval)
+            st.title('Cercle des corrélations')
+            cercle_corr(corr)
     else:
         st.error("Nombre d'individus inférieur au nombre de variables")
 
@@ -154,9 +174,9 @@ def cercle_corr(corr):
 
 
 def graph_ind(df_acp, coord, acp, nb_x_axe, nb_y_axe):  
-    x_inertie = str(round(acp.explained_variance_ratio_[nb_x_axe-1]*100, 2)) + " % des données expliquées sur l'axe n°" + str(nb_x_axe)
-    y_inertie = str(round(acp.explained_variance_ratio_[nb_y_axe-1]*100, 2)) + " % des données expliquées sur l'axe n°" + str(nb_y_axe)
-    plan_inertie = str(round(acp.explained_variance_ratio_[nb_x_axe-1]*100 + acp.explained_variance_ratio_[nb_y_axe-1]*100, 2)) + " % des données expliquées sur ce plan factoriel"
+    x_inertie = str(round(acp.explained_variance_ratio_[nb_x_axe-1]*100, 2)) + " % des données sont expliquées sur l'axe n°" + str(nb_x_axe)
+    y_inertie = str(round(acp.explained_variance_ratio_[nb_y_axe-1]*100, 2)) + " % des données sont expliquées sur l'axe n°" + str(nb_y_axe)
+    plan_inertie = str(round(acp.explained_variance_ratio_[nb_x_axe-1]*100 + acp.explained_variance_ratio_[nb_y_axe-1]*100, 2)) + " % des données sont expliquées sur ce plan factoriel"
     fig = px.scatter(x = coord[:,nb_x_axe-1], y = coord[:,nb_y_axe-1], text=df_acp.index,
                  labels=dict(x='Axe n°' + str(nb_x_axe), y='Axe n°' + str(nb_y_axe))
                 )
@@ -164,6 +184,24 @@ def graph_ind(df_acp, coord, acp, nb_x_axe, nb_y_axe):
     fig.update_traces(textposition='top center')
     st.write(fig)
     return x_inertie, y_inertie, plan_inertie
+
+
+def get_indices_of_nearest_neighbours(df,Coords, n):
+    indice = np.array(df.index)
+    tree=spatial.cKDTree(Coords)
+    res=tree.query(Coords, k=n)[1][:,0:]
+    res = pd.DataFrame(indice[res])
+    return res
+
+
+def same_reco(df, ind):
+    res = []
+    for i in df.columns:
+        res.append(df[df[0] == ind].iloc[:,i].to_string()[5:])
+    res = res[1:]
+    for i in range(len(res)):
+        st.write('Individu similaire n°' + str(i+1) +' : ' + res[i])
+    return res
 
 if __name__ == "__main__":
     main()
