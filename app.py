@@ -15,8 +15,8 @@ def main():
 
 # Set configs
     st.set_page_config(
-	layout="centered",  # Can be "centered" or "wide". In the future also "dashboard", etc.
-	initial_sidebar_state="expanded",  # Can be "auto", "expanded", "collapsed"
+	layout="wide",  # Can be "centered" or "wide". In the future also "dashboard", etc.
+	initial_sidebar_state="collapsed",  # Can be "auto", "expanded", "collapsed"
 	page_title='V and B App',  # String or None. Strings get appended with "• Streamlit". 
 	page_icon=None,  # String, anything supported by st.image, or None.
     )
@@ -76,8 +76,11 @@ def main():
 ### Main Page
 # Page d'accueil
     if page == "Page d'accueil":
-        st.title('Title')
-        st.markdown("---")
+        col1, col2, col3 = st.beta_columns((1,3,1))
+        with col2:
+            st.title('Title')
+            st.markdown("---")
+            st.write("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum")
 
 # Données   
     if page == 'Données':
@@ -86,57 +89,111 @@ def main():
 # Indicateurs
     if page == 'Indicateurs':
         
-        nb_bouteilles(df)
-        nb_bouteilles(df_select)
+        #nb_bouteilles(df)
+        #nb_bouteilles(df_select)
 
         if sel_boisson == 'Bière':
-            gauges = ['Amertume', 'Acidité', 'Vivacité', 'Puissance', 'Rondeur', 'Fruité']
-            for gaug in gauges:
-                gauge(df, df_select, gaug)
+            col1, col2, col3= st.beta_columns(3)
+            with col1:
+                gauges = ['Amertume', 'Acidité']
+                for gaug in gauges:
+                    gauge(df, df_select, gaug)
+            with col2:
+                gauges = ['Vivacité', 'Puissance']
+                for gaug in gauges:
+                    gauge(df, df_select, gaug)
+            with col3:
+                gauges = ['Rondeur', 'Fruité']
+                for gaug in gauges:
+                    gauge(df, df_select, gaug)
 
         if sel_boisson == 'Vin':
-            gauges = ['Fruité', 'Vivacité', 'Puissance', 'Epicé/boisé']
-            for gaug in gauges:
-                gauge(df, df_select, gaug)
+            col1, col2= st.beta_columns(2)
+            with col1:
+                gauges = ['Fruité', 'Vivacité']
+                for gaug in gauges:
+                    gauge(df, df_select, gaug)
+            with col2:
+                gauges = ['Puissance', 'Epicé/boisé']
+                for gaug in gauges:
+                    gauge(df, df_select, gaug)
 
         if sel_boisson == 'Whisky':
-            gauges = ['Epicé/Boisé', 'Tourbé/Fumé', 'Iodé', 'Fruité', 'Floral/Végétal', 'Malté', 'Organique', 'Vivacité', 'Pâtissier']
-            for gaug in gauges:
-                gauge(df, df_select, gaug)
+            col1, col2, col3= st.beta_columns(3)
+            with col1:
+                gauges = ['Epicé/Boisé', 'Tourbé/Fumé', 'Iodé']
+                for gaug in gauges:
+                    gauge(df, df_select, gaug)
+            with col2:
+                gauges = ['Fruité', 'Floral/Végétal', 'Malté']
+                for gaug in gauges:
+                    gauge(df, df_select, gaug)
+            with col3:
+                gauges = ['Organique', 'Vivacité', 'Pâtissier']
+                for gaug in gauges:
+                    gauge(df, df_select, gaug)
 
         if sel_boisson == 'Rhum':
-            gauges = ['Epicé/Boisé', 'Tourbé/Fumé', 'Fruité', 'Floral/Végétal', 'Vivacité', 'Sucrosité', 'Pâtissier']
-            for gaug in gauges:
-                gauge(df, df_select, gaug)
-
+            col1, col2, col3= st.beta_columns(3)
+            with col1:
+                gauges = ['Epicé/Boisé', 'Tourbé/Fumé', 'Fruité']
+                for gaug in gauges:
+                    gauge(df, df_select, gaug)
+            with col2:
+                gauges = ['Floral/Végétal', 'Vivacité']
+                for gaug in gauges:
+                    gauge(df, df_select, gaug)
+            with col3:
+                gauges = ['Sucrosité', 'Pâtissier']
+                for gaug in gauges:
+                    gauge(df, df_select, gaug)
 
     if page == 'Recommandateur':
-        st.title('Choix des variables')
-        if sel_boisson != 'Whisky':
-            y_var = st.selectbox('Variable à expliquer', list(df_select.select_dtypes(include=np.object).iloc[:,:5].columns))
-        else :
-            y_var = st.selectbox('Variable à expliquer', list(df_select.select_dtypes(include=np.object).iloc[:,:4].columns))
-        X_var = st.multiselect('Variables expliquatives', list(df_select.select_dtypes(include=np.number).columns), default=list(df_select.select_dtypes(include=np.number).columns))
+        col1, col2, col3 = st.beta_columns(3)
+        with col1:
+            st.title('Choix des variables')
+            if sel_boisson != 'Whisky':
+                y_var = st.selectbox('Variable à expliquer', list(df_select.select_dtypes(include=np.object).iloc[:,:5].columns))
+            else :
+                y_var = st.selectbox('Variable à expliquer', list(df_select.select_dtypes(include=np.object).iloc[:,:4].columns))
+            X_var = st.multiselect('Variables expliquatives', list(df_select.select_dtypes(include=np.number).columns), default=list(df_select.select_dtypes(include=np.number).columns))
 
-        df_acp, n, p, acp_, coord, eigval = acp(df = df_select, X = X_var, y = y_var)
+            df_acp, n, p, acp_, coord, eigval = acp(df = df_select, X = X_var, y = y_var)
 
         if n>=p:  
+            with col1:
+                st.title('Choix des axes à étudier')
+                nb_axe_x = st.number_input('Numéro axe factoriel pour X max(' + str(p) + ')', value=1, max_value=p)
+                nb_axe_y = st.number_input('Numéro axe factoriel pour Y max(' + str(p) + ')', value=2, max_value=p)
+                x_inertie, y_inertie, plan_inertie = text_inertie(acp_, nb_axe_x, nb_axe_y)
+                st.write(x_inertie)
+                st.write(y_inertie)
+                st.write(plan_inertie)
 
-            st.title('Choix des axes à étudier')
-            nb_axe_x = st.number_input('Numéro axe factoriel pour X max(' + str(p) + ')', value=1, max_value=p)
-            nb_axe_y = st.number_input('Numéro axe factoriel pour Y max(' + str(p) + ')', value=2, max_value=p)
+            with col2:
+                st.title('Individus similaires')
+                sel_simi = st.selectbox('', sorted(df_acp.index))
+                nb_simi = st.number_input("Nombre d'individus les plus similaires", min_value=1, max_value=n-1, value=3)
+                df_near = get_indices_of_nearest_neighbours(df_acp, coord, nb_simi+1)
+                same_reco(df_near, sel_simi)
 
-            st.title('Graphique des individus')
-            x_inertie, y_inertie, plan_inertie = graph_ind(df_acp, coord, acp_, nb_axe_x, nb_axe_y)
-            st.write(x_inertie)
-            st.write(y_inertie)
-            st.write(plan_inertie)
+                exp_graph_ind = st.beta_expander("Graphique des individus")
+                with exp_graph_ind:
+                    st.title('Graphique des individus')
+                    graph_ind(df_acp, coord, acp_, nb_axe_x, nb_axe_y)
 
-            st.title('Individus similaires')
-            sel_simi = st.selectbox('', sorted(df_acp.index))
-            nb_simi = st.number_input("Nombre d'individus les plus similaires", min_value=1, max_value=n-1, value=3)
-            df_near = get_indices_of_nearest_neighbours(df_acp, coord, nb_simi+1)
-            same_reco(df_near, sel_simi)
+            with col3:
+                st.title('Individus similaires')
+                #sel_simi = st.selectbox('', sorted(df_acp.index))
+                #nb_simi = st.number_input("Nombre d'individus les plus similaires", min_value=1, max_value=n-1, value=3)
+                #df_near = get_indices_of_nearest_neighbours(df_acp, coord, nb_simi+1)
+                same_reco(df_near, sel_simi)
+
+                st.title('Graphique des individus')
+                graph_ind(df_acp, coord, acp_, nb_axe_x, nb_axe_y)
+
+
+
             #st.write(reco)
 
             my_expander = st.beta_expander("Détails de l'ACP")
@@ -200,7 +257,10 @@ def gauge(df_base, df_after, var_gauge):
             'thickness': 0.75,
             'value': df_base[var_gauge].mean()}}))
 
-    fig.update_layout(paper_bgcolor = "white", font = {'color': "darkblue", 'family': "Trebuchet MS"})
+    fig.update_layout(paper_bgcolor = 'rgba(0,0,0,0)', font = {'color': "darkblue", 'family': "Trebuchet MS"},
+                    autosize=True,
+                  width=370, height=370,
+                  margin=dict(l=40, r=40, b=40, t=40))
     st.plotly_chart(fig)
 
 # ACP & Recommandations
@@ -274,17 +334,22 @@ def cercle_corr(corr):
     st.write(fig)
 
 
-def graph_ind(df_acp, coord, acp, nb_x_axe, nb_y_axe):  
+def text_inertie(acp, nb_x_axe, nb_y_axe):
     x_inertie = str(round(acp.explained_variance_ratio_[nb_x_axe-1]*100, 2)) + " % des données sont expliquées sur l'axe n°" + str(nb_x_axe)
     y_inertie = str(round(acp.explained_variance_ratio_[nb_y_axe-1]*100, 2)) + " % des données sont expliquées sur l'axe n°" + str(nb_y_axe)
     plan_inertie = str(round(acp.explained_variance_ratio_[nb_x_axe-1]*100 + acp.explained_variance_ratio_[nb_y_axe-1]*100, 2)) + " % des données sont expliquées sur ce plan factoriel"
+    return x_inertie, y_inertie, plan_inertie
+
+def graph_ind(df_acp, coord, acp, nb_x_axe, nb_y_axe):  
     fig = px.scatter(x = coord[:,nb_x_axe-1], y = coord[:,nb_y_axe-1], text=df_acp.index,
                  labels=dict(x='Axe n°' + str(nb_x_axe), y='Axe n°' + str(nb_y_axe))
                 )
-
     fig.update_traces(textposition='top center')
+    fig.update_layout(autosize=True,
+                  width=400, height=400,
+                  margin=dict(l=40, r=40, b=40, t=40))
     st.write(fig)
-    return x_inertie, y_inertie, plan_inertie
+    
 
 
 def get_indices_of_nearest_neighbours(df,Coords, n):
