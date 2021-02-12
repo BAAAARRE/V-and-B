@@ -2,9 +2,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-import plotly.graph_objects as go
 import plotly.express as px
-from plotly.subplots import make_subplots
+import plotly.graph_objects as go
 
 import sklearn
 from sklearn.preprocessing import StandardScaler
@@ -22,40 +21,23 @@ def main():
     )
     
 
-# Load Data
-    beer = pd.read_csv('clean_beer.csv')
-    wine = pd.read_csv('clean_wine.csv').drop('Accompagnements', axis = 1) # Beaurenard 2017
-    whisky = pd.read_csv('clean_whisky.csv')
-    rhum = pd.read_csv('clean_rhum.csv')
-
 # Set Sidebar
     st.sidebar.title('Navigation onglet')
     page = st.sidebar.selectbox("Choisir une page", ["Page d'accueil", "Données", "Indicateurs", "Recommandateur"])
     if page != "Page d'accueil":
         sel_boisson = st.sidebar.selectbox('Boisson', ['Bière', 'Vin', 'Whisky', 'Rhum'])
         
-        if sel_boisson == 'Bière':
-            df = beer
-            sel_type = st.sidebar.multiselect('Type de bière', sorted(df['Type de bière'].unique()))
-            sel_type_2 = st.sidebar.multiselect('Type de bière précision', sorted(df['Type de bière précision'].unique()))
-            df_type = multi_filter(df, sel_type, 'Type de bière')
-            df_type_2 = multi_filter(df, sel_type_2, 'Type de bière précision')
-        if sel_boisson == 'Vin':
-            df = wine
-            sel_type = st.sidebar.multiselect('Type de vin', sorted(df['Type de vin'].unique()))
-            sel_type_2 = st.sidebar.multiselect('Type de vin précision', sorted(df['Type de vin précision'].unique()))
-            df_type = multi_filter(df, sel_type, 'Type de vin')
-            df_type_2 = multi_filter(df, sel_type_2, 'Type de vin précision')
+        if sel_boisson != 'Whisky':
+            df = pd.read_csv('clean_' + sel_boisson.lower() + '.csv')
+            sel_type = st.sidebar.multiselect('Type de ' + sel_boisson.lower(), sorted(df['Type de ' + sel_boisson.lower()].unique()))
+            sel_type_2 = st.sidebar.multiselect('Type de ' + sel_boisson.lower() + ' précision', sorted(df['Type de ' + sel_boisson.lower() + ' précision'].unique()))
+            df_type = multi_filter(df, sel_type, 'Type de ' + sel_boisson.lower())
+            df_type_2 = multi_filter(df, sel_type_2, 'Type de ' + sel_boisson.lower() + ' précision')
+
         if sel_boisson == 'Whisky':
-            df = whisky
+            df = pd.read_csv('clean_' + sel_boisson.lower() + '.csv')
             sel_type = st.sidebar.multiselect('Type de whisky', sorted(df['Type de whisky'].unique()))
             df_type = multi_filter(df, sel_type, 'Type de whisky')
-        if sel_boisson == 'Rhum':
-            df = rhum
-            sel_type = st.sidebar.multiselect('Type de rhum', sorted(df['Type de rhum'].unique()))
-            sel_type_2 = st.sidebar.multiselect('Type de rhum précision', sorted(df['Type de rhum précision'].unique()))
-            df_type = multi_filter(df, sel_type, 'Type de rhum')
-            df_type_2 = multi_filter(df, sel_type_2, 'Type de rhum précision')
 
         slider_prix = st.sidebar.slider('Prix (€)', float(df['Prix'].min()), float(df['Prix'].max()), (float(df['Prix'].min()), float(df['Prix'].max())))
         slider_degre = st.sidebar.slider("Degré d'alcool (%)", float(df["Degré d'alcool"].min()), float(df["Degré d'alcool"].max()), (float(df["Degré d'alcool"].min()), float(df["Degré d'alcool"].max())))
@@ -149,6 +131,7 @@ def main():
                 for gaug in gauges:
                     gauge(df, df_select, gaug)
 
+# Recommandateur
     if page == 'Recommandateur':
         col1, col2 = st.beta_columns(2)
         with col1:
@@ -163,20 +146,20 @@ def main():
 
         if n>=p:  
             with col2:
-                st.title('Individus similaires')
-                sel_simi = st.selectbox('', sorted(df_acp.index))
-                nb_simi = st.number_input("Nombre d'individus les plus similaires", min_value=1, max_value=n-1, value=3)
+                st.title(sel_boisson + ' ressemblants')
+                sel_simi = st.selectbox(sel_boisson + ' que tu aimes', sorted(df_acp.index))
+                nb_simi = st.number_input("Nombre de " + sel_boisson.lower() + "s les plus ressemblants", min_value=1, max_value=n-1, value=3)
                 df_near = get_indices_of_nearest_neighbours(df_acp, coord, nb_simi+1)
-                same_reco(df_near, sel_simi)
+                same_reco(df_near, sel_simi, sel_boisson)
 
         else:
-            st.error("Nombre d'individus inférieur au nombre de variables")
+            st.error("Nombre de " + sel_boisson.lower() + "s sélectionnées inférieur au nombre de variables explicatives.")
 
 
 # Bottom page
     st.write("\n") 
     st.write("\n")
-    st.info("""By : Ligue des Datas [Instagram](https://www.instagram.com/ligueddatas/) / [Twitter](https://twitter.com/ligueddatas) | Data source : [V and B](https://vandb.fr/)""")
+    st.info("""By : Ligue des Datas [Instagram](https://www.instagram.com/ligueddatas/) | Data source : [V and B](https://vandb.fr/)""")
 
 
 
@@ -243,78 +226,6 @@ def acp(df, X, y):
     
     return df_acp, n, p, acp_, coord, eigval
 
-
-def choix_axe(acp, p):
-    axe_var = np.round(acp.explained_variance_ratio_*100, 2)
-    axe_var_sum = np.cumsum(axe_var)
-    axe = np.arange(1,p+1)
-
-    fig = px.bar(x = axe, y = axe_var, text = axe_var,
-                labels=dict(x="Numéro de l'axe", y='Variance expliqué en %')
-                )
-    fig.update_traces(textposition='outside')
-    fig.add_trace(go.Scatter(x=axe, y=axe_var, mode='lines'))
-    st.write(fig)
-
-
-def correlation(acp, p, df, nb_x_axe, nb_y_axe, eigval):
-    sqrt_eigval = np.sqrt(eigval)
-    corvar = np.zeros((p,p))
-    for k in range(p):
-        corvar[:,k] = acp.components_[k,:] * sqrt_eigval[k]
-
-    corr = pd.DataFrame({'id':df.columns, 'Axe_' + str(nb_x_axe):corvar[:,nb_x_axe-1], 'Axe_' + str(nb_y_axe):corvar[:,nb_y_axe-1]})
-    return corr
-
-
-def cercle_corr(corr):
-    fig = px.scatter(corr, x = corr.iloc[:,1], y = corr.iloc[:,2], text= 'id',
-                     labels=dict(x=corr.columns[1], y=corr.columns[2])   
-                    )
-
-    fig.update_traces(textposition='top center')
-    # Set axes properties
-    fig.update_xaxes(range=[-1, 1], zeroline=False)
-    fig.update_yaxes(range=[-1, 1])
-
-    # Add circles
-    fig.add_shape(type="circle",
-        xref="x", yref="y",
-        x0=-1, y0=-1, x1=1, y1=1,
-        line_color="LightSeaGreen",
-    )
-
-    # Add shapes
-    for i in range(len(corr.iloc[:,1])):
-        fig.add_shape(type="line",
-            x0=0, y0=0, x1=corr.iloc[:,1][i], y1=corr.iloc[:,2][i],
-            line=dict(color="RoyalBlue",width=2)
-        )
-
-    # Set figure size
-    fig.update_layout(width=700, height=700)
-
-    st.write(fig)
-
-
-def text_inertie(acp, nb_x_axe, nb_y_axe):
-    x_inertie = str(round(acp.explained_variance_ratio_[nb_x_axe-1]*100, 2)) + " % des données sont expliquées sur l'axe n°" + str(nb_x_axe)
-    y_inertie = str(round(acp.explained_variance_ratio_[nb_y_axe-1]*100, 2)) + " % des données sont expliquées sur l'axe n°" + str(nb_y_axe)
-    plan_inertie = str(round(acp.explained_variance_ratio_[nb_x_axe-1]*100 + acp.explained_variance_ratio_[nb_y_axe-1]*100, 2)) + " % des données sont expliquées sur ce plan factoriel"
-    return x_inertie, y_inertie, plan_inertie
-
-def graph_ind(df_acp, coord, acp, nb_x_axe, nb_y_axe):  
-    fig = px.scatter(x = coord[:,nb_x_axe-1], y = coord[:,nb_y_axe-1], text=df_acp.index,
-                 labels=dict(x='Axe n°' + str(nb_x_axe), y='Axe n°' + str(nb_y_axe))
-                )
-    fig.update_traces(textposition='top center')
-    fig.update_layout(autosize=True,
-                  width=400, height=400,
-                  margin=dict(l=40, r=40, b=40, t=40))
-    st.write(fig)
-    
-
-
 def get_indices_of_nearest_neighbours(df,Coords, n):
     indice = np.array(df.index)
     tree=spatial.cKDTree(Coords)
@@ -323,16 +234,16 @@ def get_indices_of_nearest_neighbours(df,Coords, n):
     return res
 
 
-def same_reco(df, ind):
+def same_reco(df, ind, type_boisson):
     res = []
     for i in df.columns:
         res.append(df[df[0] == ind].iloc[:,i].to_string()[5:])
     res = res[1:]
     for i in range(len(res)):
         if len(res[i]) <= 43:
-            st.write('Individu similaire n°' + str(i+1) +' : ' + res[i])
+            st.write(type_boisson + ' ressemblant n°' + str(i+1) +' : ' + res[i])
         else:
-            st.write('Individu similaire n°' + str(i+1) +' : ' + res[i][:43])
+            st.write(type_boisson + ' ressemblant n°' + str(i+1) +' : ' + res[i][:43])
             st.write(res[i][43:])
     return res
 
