@@ -31,47 +31,48 @@ def main():
 # Set Sidebar
     st.sidebar.title('Navigation onglet')
     page = st.sidebar.selectbox("Choisir une page", ["Page d'accueil", "Données", "Indicateurs", "Recommandateur"])
-    sel_boisson = st.sidebar.selectbox('Boisson', ['Bière', 'Vin', 'Whisky', 'Rhum'])
-    
-    if sel_boisson == 'Bière':
-        df = beer
-        sel_type = st.sidebar.multiselect('Type de bière', sorted(df['Type de bière'].unique()))
-        sel_type_2 = st.sidebar.multiselect('Type de bière précision', sorted(df['Type de bière précision'].unique()))
-        df_type = multi_filter(df, sel_type, 'Type de bière')
-        df_type_2 = multi_filter(df, sel_type_2, 'Type de bière précision')
-    if sel_boisson == 'Vin':
-        df = wine
-        sel_type = st.sidebar.multiselect('Type de vin', sorted(df['Type de vin'].unique()))
-        sel_type_2 = st.sidebar.multiselect('Type de vin précision', sorted(df['Type de vin précision'].unique()))
-        df_type = multi_filter(df, sel_type, 'Type de vin')
-        df_type_2 = multi_filter(df, sel_type_2, 'Type de vin précision')
-    if sel_boisson == 'Whisky':
-        df = whisky
-        sel_type = st.sidebar.multiselect('Type de whisky', sorted(df['Type de whisky'].unique()))
-        df_type = multi_filter(df, sel_type, 'Type de whisky')
-    if sel_boisson == 'Rhum':
-        df = rhum
-        sel_type = st.sidebar.multiselect('Type de rhum', sorted(df['Type de rhum'].unique()))
-        sel_type_2 = st.sidebar.multiselect('Type de rhum précision', sorted(df['Type de rhum précision'].unique()))
-        df_type = multi_filter(df, sel_type, 'Type de rhum')
-        df_type_2 = multi_filter(df, sel_type_2, 'Type de rhum précision')
+    if page != "Page d'accueil":
+        sel_boisson = st.sidebar.selectbox('Boisson', ['Bière', 'Vin', 'Whisky', 'Rhum'])
+        
+        if sel_boisson == 'Bière':
+            df = beer
+            sel_type = st.sidebar.multiselect('Type de bière', sorted(df['Type de bière'].unique()))
+            sel_type_2 = st.sidebar.multiselect('Type de bière précision', sorted(df['Type de bière précision'].unique()))
+            df_type = multi_filter(df, sel_type, 'Type de bière')
+            df_type_2 = multi_filter(df, sel_type_2, 'Type de bière précision')
+        if sel_boisson == 'Vin':
+            df = wine
+            sel_type = st.sidebar.multiselect('Type de vin', sorted(df['Type de vin'].unique()))
+            sel_type_2 = st.sidebar.multiselect('Type de vin précision', sorted(df['Type de vin précision'].unique()))
+            df_type = multi_filter(df, sel_type, 'Type de vin')
+            df_type_2 = multi_filter(df, sel_type_2, 'Type de vin précision')
+        if sel_boisson == 'Whisky':
+            df = whisky
+            sel_type = st.sidebar.multiselect('Type de whisky', sorted(df['Type de whisky'].unique()))
+            df_type = multi_filter(df, sel_type, 'Type de whisky')
+        if sel_boisson == 'Rhum':
+            df = rhum
+            sel_type = st.sidebar.multiselect('Type de rhum', sorted(df['Type de rhum'].unique()))
+            sel_type_2 = st.sidebar.multiselect('Type de rhum précision', sorted(df['Type de rhum précision'].unique()))
+            df_type = multi_filter(df, sel_type, 'Type de rhum')
+            df_type_2 = multi_filter(df, sel_type_2, 'Type de rhum précision')
 
-    slider_prix = st.sidebar.slider('Prix (€)', float(df['Prix'].min()), float(df['Prix'].max()), (float(df['Prix'].min()), float(df['Prix'].max())))
-    slider_degre = st.sidebar.slider("Degré d'alcool (%)", float(df["Degré d'alcool"].min()), float(df["Degré d'alcool"].max()), (float(df["Degré d'alcool"].min()), float(df["Degré d'alcool"].max())))
-    sel_nom = st.sidebar.multiselect('Nom', sorted(df['Nom'].unique()))
-    sel_pays = st.sidebar.multiselect('Pays', sorted(df['Pays'].unique()))
+        slider_prix = st.sidebar.slider('Prix (€)', float(df['Prix'].min()), float(df['Prix'].max()), (float(df['Prix'].min()), float(df['Prix'].max())))
+        slider_degre = st.sidebar.slider("Degré d'alcool (%)", float(df["Degré d'alcool"].min()), float(df["Degré d'alcool"].max()), (float(df["Degré d'alcool"].min()), float(df["Degré d'alcool"].max())))
+        sel_nom = st.sidebar.multiselect('Nom', sorted(df['Nom'].unique()))
+        sel_pays = st.sidebar.multiselect('Pays', sorted(df['Pays'].unique()))
 
-# Configure generals filters
+    # Configure generals filters
 
-    df_prix = df[df['Prix'].between(slider_prix[0],slider_prix[1])]
-    df_degre = df[df["Degré d'alcool"].between(slider_degre[0],slider_degre[1])]
-    df_pays = multi_filter(df, sel_pays, 'Pays')
-    df_nom = multi_filter(df, sel_nom, 'Nom')
+        df_prix = df[df['Prix'].between(slider_prix[0],slider_prix[1])]
+        df_degre = df[df["Degré d'alcool"].between(slider_degre[0],slider_degre[1])]
+        df_pays = multi_filter(df, sel_pays, 'Pays')
+        df_nom = multi_filter(df, sel_nom, 'Nom')
 
-    if sel_boisson != 'Whisky':
-        df_select = df[df.isin(df_type) & df.isin(df_type_2) & df.isin(df_prix) & df.isin(df_degre) & df.isin(df_pays) & df.isin(df_nom)].dropna()
-    else:
-        df_select = df[df.isin(df_type) & df.isin(df_prix) & df.isin(df_degre) & df.isin(df_pays) & df.isin(df_nom)].dropna()
+        if sel_boisson != 'Whisky':
+            df_select = df[df.isin(df_type) & df.isin(df_type_2) & df.isin(df_prix) & df.isin(df_degre) & df.isin(df_pays) & df.isin(df_nom)].dropna()
+        else:
+            df_select = df[df.isin(df_type) & df.isin(df_prix) & df.isin(df_degre) & df.isin(df_pays) & df.isin(df_nom)].dropna()
 
 ### Main Page
 # Page d'accueil
@@ -149,7 +150,7 @@ def main():
                     gauge(df, df_select, gaug)
 
     if page == 'Recommandateur':
-        col1, col2, col3 = st.beta_columns(3)
+        col1, col2 = st.beta_columns(2)
         with col1:
             st.title('Choix des variables')
             if sel_boisson != 'Whisky':
@@ -161,15 +162,6 @@ def main():
             df_acp, n, p, acp_, coord, eigval = acp(df = df_select, X = X_var, y = y_var)
 
         if n>=p:  
-            with col1:
-                st.title('Choix des axes à étudier')
-                nb_axe_x = st.number_input('Numéro axe factoriel pour X max(' + str(p) + ')', value=1, max_value=p)
-                nb_axe_y = st.number_input('Numéro axe factoriel pour Y max(' + str(p) + ')', value=2, max_value=p)
-                x_inertie, y_inertie, plan_inertie = text_inertie(acp_, nb_axe_x, nb_axe_y)
-                st.write(x_inertie)
-                st.write(y_inertie)
-                st.write(plan_inertie)
-
             with col2:
                 st.title('Individus similaires')
                 sel_simi = st.selectbox('', sorted(df_acp.index))
@@ -177,35 +169,6 @@ def main():
                 df_near = get_indices_of_nearest_neighbours(df_acp, coord, nb_simi+1)
                 same_reco(df_near, sel_simi)
 
-                exp_graph_ind = st.beta_expander("Graphique des individus")
-                with exp_graph_ind:
-                    st.title('Graphique des individus')
-                    graph_ind(df_acp, coord, acp_, nb_axe_x, nb_axe_y)
-
-            with col3:
-                st.title('Individus similaires')
-                #sel_simi = st.selectbox('', sorted(df_acp.index))
-                #nb_simi = st.number_input("Nombre d'individus les plus similaires", min_value=1, max_value=n-1, value=3)
-                #df_near = get_indices_of_nearest_neighbours(df_acp, coord, nb_simi+1)
-                same_reco(df_near, sel_simi)
-
-                st.title('Graphique des individus')
-                graph_ind(df_acp, coord, acp_, nb_axe_x, nb_axe_y)
-
-
-
-            #st.write(reco)
-
-            my_expander = st.beta_expander("Détails de l'ACP")
-            with my_expander:
-                
-
-                st.title('Variance expliquée')
-                choix_axe(acp_, p)    
-
-                corr = correlation(acp_, p, df_acp, nb_axe_x, nb_axe_y, eigval)
-                st.title('Cercle des corrélations')
-                cercle_corr(corr)
         else:
             st.error("Nombre d'individus inférieur au nombre de variables")
 
