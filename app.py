@@ -146,7 +146,7 @@ def main():
 
         if n>=p:  
             with col2:
-                st.title(sel_boisson + ' ressemblants')
+                st.title('Recommandateur')
                 sel_simi = st.selectbox(sel_boisson + ' que tu aimes', sorted(df_acp.index))
                 nb_simi = st.number_input("Nombre de " + sel_boisson.lower() + "s les plus ressemblants", min_value=1, max_value=n-1, value=3)
                 df_near = get_indices_of_nearest_neighbours(df_acp, coord, nb_simi+1)
