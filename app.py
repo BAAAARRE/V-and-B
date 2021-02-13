@@ -22,10 +22,11 @@ def main():
     
 
 # Set Sidebar
-    st.sidebar.title('Navigation onglet')
+    st.sidebar.title("Navigation")
     page = st.sidebar.selectbox("Choisir une page", ["Page d'accueil", "Données", "Indicateurs", "Recommandateur"])
     if page != "Page d'accueil":
-        sel_boisson = st.sidebar.selectbox('Boisson', ['Bière', 'Vin', 'Whisky', 'Rhum'])
+        sel_boisson = st.sidebar.selectbox('Choisir une boisson', ['Bière', 'Vin', 'Whisky', 'Rhum'])
+        st.sidebar.title("Filtres")
         
         if sel_boisson != 'Whisky':
             df = pd.read_csv('clean_' + sel_boisson.lower() + '.csv')
@@ -61,75 +62,69 @@ def main():
     if page == "Page d'accueil":
         col1, col2, col3 = st.beta_columns((1,3,1))
         with col2:
-            st.title('Title')
-            st.markdown("---")
-            st.write("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum")
+            st.title('Présentation')
+            st.write("Bienvenue sur ce site qui a été crée par et pour les amateurs de bons produits et de bonnes bouteilles. Ce site a pour objectif de pouvoir explorer et découvrir de bonnes bouteilles à travers des indicateurs et des modèles statistiques.")
+            
+            st.title("D'où proviennent les données")
+            st.write("Ces données ont été scrapées sur le site www.vandb.com. La liste exhaustive des boissons proposées par l'enseigne V and B sur son site est recupérée dans un premier temps. Puis à partir de cette liste, les caractéristiques attribuées à ces boissons par la compagnie sont stockées. Ces caractéristiques sont des notions propres à chacun. Nous faisons entièrement confiance à V and B quand à la pertinence des notes choisies.")
+            
+            st.title('Utilisation du site')
+            st.write("Il faut cliquer sur la petite flèche en haut à gauche pour afficher l'onglet de navigation. Vous pouvez donc choisir la page et la boisson que vous souhaitez. Puis filtrer les bouteilles en fonction de certaines variables.")
+            st.subheader("Données :")
+            st.write("Tableau brut des données permettant de découvrir les données disponibles, et d'explorer en détail les bouteilles sélectionnées.")
+            st.subheader("Indicateurs :")
+            st.write("Ensemble d'indicateurs de moyennes des notes gustatives (sur 10) des bouteilles. Ces indicateurs permettent de comparer les bouteilles filtrées en fonction de l'ensemble des bouteilles.")
+            st.subheader("Recommandateur :")
+            st.write("Choisissez une bouteille que vous aimez, l'algorithme va vous donner les bouteilles qui lui ressemble le plus. Ces recommandations sont basées sur les bouteilles que vous avez filtrez, et les variables explicatives que vous avez sélectionnées.")
 
 # Données   
     if page == 'Données':
+        st.title("Données des " + sel_boisson.lower() + "s présents chez V and B")
+        st.write("Une ligne correspond à une bouteille et ses caractéristiques.")
+        st.write("Vous pouvez mettre le tableau en plein écran afin de mieux visualiser le tableau.")
+        st.markdown("---")
         st.dataframe(df_select)
 
 # Indicateurs
     if page == 'Indicateurs':
-        
+        st.title("Indicateurs de moyenne")
+        st.write("La gauge et la valeur au centre correspondent à la moyenne des bouteilles filtrées. Le trait rouge correspond à la moyenne pour l'ensemble des bouteilles. Le delta correspond à la différence entre la moyenne des bouteilles sélectionnées et la moyenne de l'ensemble des bouteilles.")
         #nb_bouteilles(df)
         #nb_bouteilles(df_select)
 
         if sel_boisson == 'Bière':
             col1, col2, col3= st.beta_columns(3)
             with col1:
-                gauges = ['Amertume', 'Acidité']
-                for gaug in gauges:
-                    gauge(df, df_select, gaug)
+                multi_gauges(df, df_select, ['Amertume', 'Acidité'])
             with col2:
-                gauges = ['Vivacité', 'Puissance']
-                for gaug in gauges:
-                    gauge(df, df_select, gaug)
+                multi_gauges(df, df_select, ['Vivacité', 'Puissance'])
             with col3:
-                gauges = ['Rondeur', 'Fruité']
-                for gaug in gauges:
-                    gauge(df, df_select, gaug)
+                multi_gauges(df, df_select, ['Rondeur', 'Fruité'])
 
         if sel_boisson == 'Vin':
             col1, col2= st.beta_columns(2)
             with col1:
-                gauges = ['Fruité', 'Vivacité']
-                for gaug in gauges:
-                    gauge(df, df_select, gaug)
+                multi_gauges(df, df_select, ['Fruité', 'Vivacité'])
             with col2:
-                gauges = ['Puissance', 'Epicé/boisé']
-                for gaug in gauges:
-                    gauge(df, df_select, gaug)
+                multi_gauges(df, df_select, ['Puissance', 'Epicé/boisé'])
 
         if sel_boisson == 'Whisky':
             col1, col2, col3= st.beta_columns(3)
             with col1:
-                gauges = ['Epicé/Boisé', 'Tourbé/Fumé', 'Iodé']
-                for gaug in gauges:
-                    gauge(df, df_select, gaug)
+                multi_gauges(df, df_select, ['Epicé/Boisé', 'Tourbé/Fumé', 'Iodé'])
             with col2:
-                gauges = ['Fruité', 'Floral/Végétal', 'Malté']
-                for gaug in gauges:
-                    gauge(df, df_select, gaug)
+                multi_gauges(df, df_select, ['Fruité', 'Floral/Végétal', 'Malté'])
             with col3:
-                gauges = ['Organique', 'Vivacité', 'Pâtissier']
-                for gaug in gauges:
-                    gauge(df, df_select, gaug)
+                multi_gauges(df, df_select, ['Organique', 'Vivacité', 'Pâtissier'])
 
         if sel_boisson == 'Rhum':
             col1, col2, col3= st.beta_columns(3)
             with col1:
-                gauges = ['Epicé/Boisé', 'Tourbé/Fumé', 'Fruité']
-                for gaug in gauges:
-                    gauge(df, df_select, gaug)
+                multi_gauges(df, df_select, ['Epicé/Boisé', 'Tourbé/Fumé', 'Fruité'])
             with col2:
-                gauges = ['Floral/Végétal', 'Vivacité']
-                for gaug in gauges:
-                    gauge(df, df_select, gaug)
+                multi_gauges(df, df_select, ['Floral/Végétal', 'Vivacité'])
             with col3:
-                gauges = ['Sucrosité', 'Pâtissier']
-                for gaug in gauges:
-                    gauge(df, df_select, gaug)
+                multi_gauges(df, df_select, ['Sucrosité', 'Pâtissier'])
 
 # Recommandateur
     if page == 'Recommandateur':
@@ -144,22 +139,26 @@ def main():
 
             df_acp, n, p, acp_, coord, eigval = acp(df = df_select, X = X_var, y = y_var)
 
-        if n>=p:  
-            with col2:
-                st.title('Recommandateur')
-                sel_simi = st.selectbox(sel_boisson + ' que tu aimes', sorted(df_acp.index))
-                nb_simi = st.number_input("Nombre de " + sel_boisson.lower() + "s les plus ressemblants", min_value=1, max_value=n-1, value=3)
-                df_near = get_indices_of_nearest_neighbours(df_acp, coord, nb_simi+1)
-                same_reco(df_near, sel_simi, sel_boisson)
-
+        if len(X_var) > 0:
+            if n>=p:  
+                with col2:
+                    st.title('Recommandateur')
+                    sel_simi = st.selectbox(sel_boisson + ' que tu aimes', sorted(df_acp.index))
+                    nb_simi = st.number_input("Nombre de " + sel_boisson.lower() + "s les plus ressemblants", min_value=1, max_value=n-1, value=3)
+                    df_near = get_indices_of_nearest_neighbours(df_acp, coord, nb_simi+1)
+                    same_reco(df_near, sel_simi, sel_boisson)
+            else:
+                st.error("Nombre de " + sel_boisson.lower() + "s sélectionnées inférieur au nombre de variables explicatives.")
         else:
-            st.error("Nombre de " + sel_boisson.lower() + "s sélectionnées inférieur au nombre de variables explicatives.")
-
-
+            st.error("Pas assez variables explicatives sélectionnées.")
+            
 # Bottom page
     st.write("\n") 
     st.write("\n")
-    st.info("""By : Ligue des Datas [Instagram](https://www.instagram.com/ligueddatas/) | Data source : [V and B](https://vandb.fr/)""")
+    st.markdown("---")
+    col1, col2, col3 = st.beta_columns((1,3,1))
+    with col2:
+        st.info("""By : Ligue des Datas [Instagram](https://www.instagram.com/ligueddatas/) | Data source : [V and B](https://vandb.fr/)""")
 
 
 
@@ -208,6 +207,10 @@ def gauge(df_base, df_after, var_gauge):
                   width=370, height=370,
                   margin=dict(l=40, r=40, b=40, t=40))
     st.plotly_chart(fig)
+
+def multi_gauges(data, data_select, gauges):
+    for gaug in gauges:
+        gauge(data, data_select, gaug)
 
 # ACP & Recommandations
 def acp(df, X, y):
