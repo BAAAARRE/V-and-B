@@ -60,22 +60,20 @@ def main():
 ### Main Page
 # Page d'accueil
     if page == "Page d'accueil":
-        col1, col2, col3 = st.beta_columns((1,3,1))
-        with col2:
-            st.title('Présentation')
-            st.write("Bienvenue sur ce site qui a été crée par et pour les amateurs de bons produits et de bonnes bouteilles. Ce site a pour objectif de pouvoir explorer et découvrir de bonnes bouteilles à travers des indicateurs et des modèles statistiques.")
+        st.title('Présentation')
+        st.write("Bienvenue sur ce site qui a été crée par et pour les amateurs de bons produits et de bonnes bouteilles. Ce site a pour objectif de pouvoir explorer et découvrir de bonnes bouteilles à travers des indicateurs et des modèles statistiques.")
             
-            st.title("D'où proviennent les données")
-            st.write("Ces données ont été scrapées sur le site www.vandb.com. La liste exhaustive des boissons proposées par l'enseigne V and B sur son site est recupérée dans un premier temps. Puis à partir de cette liste, les caractéristiques attribuées à ces boissons par la compagnie sont stockées. Ces caractéristiques sont des notions propres à chacun. Nous faisons entièrement confiance à V and B quand à la pertinence des notes choisies.")
+        st.title("D'où proviennent les données")
+        st.write("Ces données ont été scrapées sur le site www.vandb.com. La liste exhaustive des boissons proposées par l'enseigne V and B sur son site est recupérée dans un premier temps. Puis à partir de cette liste, les caractéristiques attribuées à ces boissons par la compagnie sont stockées. Ces caractéristiques sont des notions propres à chacun. Nous faisons entièrement confiance à V and B quand à la pertinence des notes choisies.")
             
-            st.title('Utilisation du site')
-            st.write("Il faut cliquer sur la petite flèche en haut à gauche pour afficher l'onglet de navigation. Vous pouvez donc choisir la page et la boisson que vous souhaitez. Puis filtrer les bouteilles en fonction de certaines variables.")
-            st.subheader("Données :")
-            st.write("Tableau brut des données permettant de découvrir les données disponibles, et d'explorer en détail les bouteilles sélectionnées.")
-            st.subheader("Indicateurs :")
-            st.write("Ensemble d'indicateurs de moyennes des notes gustatives (sur 10) des bouteilles. Ces indicateurs permettent de comparer les bouteilles filtrées en fonction de l'ensemble des bouteilles.")
-            st.subheader("Recommandateur :")
-            st.write("Choisissez une bouteille que vous aimez, l'algorithme va vous donner les bouteilles qui lui ressemble le plus. Ces recommandations sont basées sur les bouteilles que vous avez filtrez, et les variables explicatives que vous avez sélectionnées.")
+        st.title('Utilisation du site')
+        st.write("Il faut cliquer sur la petite flèche en haut à gauche pour afficher l'onglet de navigation. Vous pouvez donc choisir la page et la boisson que vous souhaitez. Puis filtrer les bouteilles en fonction de certaines variables.")
+        st.subheader("Données :")
+        st.write("Tableau brut des données permettant de découvrir les données disponibles, et d'explorer en détail les bouteilles sélectionnées.")
+        st.subheader("Indicateurs :")
+        st.write("Ensemble d'indicateurs de moyennes des notes gustatives (sur 10) des bouteilles. Ces indicateurs permettent de comparer les bouteilles filtrées en fonction de l'ensemble des bouteilles.")
+        st.subheader("Recommandateur :")
+        st.write("Choisissez une bouteille que vous aimez, l'algorithme va vous donner les bouteilles qui lui ressemble le plus. Ces recommandations sont basées sur les bouteilles que vous avez filtrez, et les variables explicatives que vous avez sélectionnées.")
 
 # Données   
     if page == 'Données':
@@ -146,7 +144,17 @@ def main():
                     sel_simi = st.selectbox(sel_boisson + ' que tu aimes', sorted(df_acp.index))
                     nb_simi = st.number_input("Nombre de " + sel_boisson.lower() + "s les plus ressemblants", min_value=1, max_value=n-1, value=3)
                     df_near = get_indices_of_nearest_neighbours(df_acp, coord, nb_simi+1)
-                    same_reco(df_near, sel_simi, sel_boisson)
+                    recos = same_reco(df_near, sel_simi, sel_boisson)
+
+                data_reco_sel = df[df['Nom'] == sel_simi]
+                data_reco = df[df['Nom'].isin(recos)].drop_duplicates(subset=['Nom'])
+                data_reco_sort = data_reco.set_index('Nom').loc[recos].reset_index()
+                df_reco_final = pd.concat([data_reco_sel, data_reco_sort]).reset_index().drop("index", axis = 1)
+
+                st.write('\n')
+                st.title("Données des bouteilles recommandées")
+                st.write('\n')
+                st.dataframe(df_reco_final)
             else:
                 st.error("Nombre de " + sel_boisson.lower() + "s sélectionnées inférieur au nombre de variables explicatives.")
         else:
@@ -156,9 +164,7 @@ def main():
     st.write("\n") 
     st.write("\n")
     st.markdown("---")
-    col1, col2, col3 = st.beta_columns((1,3,1))
-    with col2:
-        st.info("""By : Ligue des Datas [Instagram](https://www.instagram.com/ligueddatas/) | Data source : [V and B](https://vandb.fr/)""")
+    st.info("""By : Ligue des Datas [Instagram](https://www.instagram.com/ligueddatas/) | Data source : [V and B](https://vandb.fr/)""")
 
 
 
@@ -240,15 +246,17 @@ def get_indices_of_nearest_neighbours(df,Coords, n):
 def same_reco(df, ind, type_boisson):
     res = []
     for i in df.columns:
-        res.append(df[df[0] == ind].iloc[:,i].to_string()[5:])
+        res.append(df[df[0] == ind].iloc[:,i].to_string()[5:].lstrip())
     res = res[1:]
     for i in range(len(res)):
-        if len(res[i]) <= 43:
-            st.write(type_boisson + ' ressemblant n°' + str(i+1) +' : ' + res[i])
-        else:
-            st.write(type_boisson + ' ressemblant n°' + str(i+1) +' : ' + res[i][:43])
-            st.write(res[i][43:])
+        st.write(type_boisson + ' ressemblant n°' + str(i+1) +' : ' + res[i])
     return res
+
+    
+def data_reco(data, recos):
+    for i in reco:
+        st.write(i)
+
 
 if __name__ == "__main__":
     main()
