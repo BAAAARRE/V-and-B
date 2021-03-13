@@ -9,7 +9,7 @@ import sklearn
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from scipy import spatial
-import spacy
+nlp = spacy.load("en_core_web_sm")
 
 def main():
 
