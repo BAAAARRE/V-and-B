@@ -9,6 +9,7 @@ import sklearn
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from scipy import spatial
+import spacy
 
 def main():
 
