@@ -4,4 +4,4 @@ plotly_express
 numpy
 sklearn
 spicy
-fr_core_news_md
+spacy
