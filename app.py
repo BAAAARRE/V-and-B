@@ -73,7 +73,7 @@ def main():
         st.subheader("Indicateurs :")
         st.write("Ensemble d'indicateurs de moyennes des notes gustatives (sur 10) des bouteilles. Ces indicateurs permettent de comparer les bouteilles filtrées en fonction de l'ensemble des bouteilles.")
         st.subheader("Recommandateur :")
-        st.write("Choisissez une bouteille que vous aimez, l'algorithme va vous donner les bouteilles qui lui ressemble le plus. Ces recommandations sont basées sur les bouteilles que vous avez filtrez, et les variables explicatives que vous avez sélectionnées.")
+        st.write("Choisissez une bouteille que vous aimez, l'algorithme va vous donner les bouteilles qui lui ressemble le plus. Ces recommandations sont basées sur les bouteilles que vous avez filtrez.")
 
 # Données   
     if page == 'Données':
